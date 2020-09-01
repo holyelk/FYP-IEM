@@ -1,2 +1,6 @@
 # FYP-IEM
-Repository for IEM FYP
+Repository for Bryan's IEM FYP
+
+Top level folders will represent what is in them
+-Ideation
+-Logbook
