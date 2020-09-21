@@ -1,0 +1,10 @@
+PCA9685 x1 - $3
+SG90 Micro Servo x3 - $9
+Push button x2 - $2
+Piezo Sensor x3 - $2
+TM1637 4 digit 7 segment x1 - $1.60
+DC Motor x1 - $2
+L298 Motor Driver x1 - $2.50
+
+Total $22.10
+
