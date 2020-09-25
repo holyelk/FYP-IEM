@@ -13,7 +13,7 @@ void setup() {
 void loop() {
   val = digitalRead(inPin);  // read input value
   if (val == LOW) {  //LOW is button pressed
-    myservo.write(60);
+    myservo.write(180);
   } else {
     myservo.write(0);
   }
