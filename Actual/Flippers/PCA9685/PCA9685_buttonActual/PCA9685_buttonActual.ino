@@ -31,6 +31,12 @@ void setup() {
   pwm.setOscillatorFrequency(27000000);
   pwm.setPWMFreq(SERVO_FREQ);  // Analog servos run at ~50 Hz updates
 
+  //initialize buttons and internal resistor. One side to ground. other to pin
+  pinMode(inPin[0], INPUT);
+  digitalWrite(inPin[0], HIGH);
+  pinMode(inPin[1], INPUT);
+  digitalWrite(inPin[1], HIGH);
+
   delay(10);
 }
 
@@ -43,20 +49,20 @@ void loop() {
     switch (thisButton) {
       case 0:
         if (buttonVal[thisButton] == LOW) {  //LOW is button pressed
-        pulselength = map(90, 0, 180, SERVOMIN, SERVOMAX);
+        pulselength = map(150, 0, 180, SERVOMIN, SERVOMAX);
         pwm.setPWM(servonum[thisButton], 0, pulselength);
         } else {
-        pulselength = map(150, 0, 180, SERVOMIN, SERVOMAX);
+        pulselength = map(90, 0, 180, SERVOMIN, SERVOMAX);
         pwm.setPWM(servonum[thisButton], 0, pulselength);
         }
         break;
 
       case 1:
         if (buttonVal[thisButton] == LOW) {  //LOW is button pressed
-        pulselength = map(90, 0, 180, SERVOMIN, SERVOMAX);
+        pulselength = map(30, 0, 180, SERVOMIN, SERVOMAX);
         pwm.setPWM(servonum[thisButton], 0, pulselength);
         } else {
-        pulselength = map(30, 0, 180, SERVOMIN, SERVOMAX);
+        pulselength = map(90, 0, 180, SERVOMIN, SERVOMAX);
         pwm.setPWM(servonum[thisButton], 0, pulselength);
         }
         break;
