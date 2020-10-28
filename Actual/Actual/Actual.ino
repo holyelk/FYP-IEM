@@ -1,8 +1,13 @@
 #include <Wire.h>
 //PCA9685 Library
 #include <Adafruit_PWMServoDriver.h>
+// 7 segment Library
+#include <TM1637Display.h>
 
-//PCA9685 pinout VCC->5V, GND->GND, SDA->A4, SCL->A5
+//PCA9685 pinout VCC->5V, GND->GND, SDA->SDA, SCL->SCL
+//L/R Button pinout 7 & 8
+//7 Segment pinout CLK->2 & DIO->3
+
 // called this way, it uses the default address 0x40
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
@@ -11,6 +16,12 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 #define USMIN  600 // This is the rounded 'minimum' microsecond length based on the minimum pulse of 150
 #define USMAX  2400 // This is the rounded 'maximum' microsecond length based on the maximum pulse of 600
 #define SERVO_FREQ 50 // Analog servos run at ~50 Hz updates
+
+//7 segment
+#define CLK 2
+#define DIO 3
+
+TM1637Display display(CLK, DIO);
 
 // servo number
 uint8_t servonum[] = {0, 1};
@@ -24,12 +35,23 @@ int buttonVal[] = {0, 0};     // variable for reading the pin status
 int numOfButtons = 2;
 
 
+//7 Segment user and com scores
+int user_score = 0;
+int com_score = 0;
+
+
 
 void setup() {
 
   pwm.begin();
   pwm.setOscillatorFrequency(27000000);
   pwm.setPWMFreq(SERVO_FREQ);  // Analog servos run at ~50 Hz updates
+
+  //Initialize 7 Segment
+  uint8_t data[] = { 0xff, 0xff, 0xff, 0xff };
+  uint8_t blank[] = { 0x00, 0x00, 0x00, 0x00 };
+  display.setBrightness(4, true);
+  display.clear();
 
   //initialize buttons and internal resistor. One side to ground. other to pin
   pinMode(inPin[0], INPUT);
@@ -69,4 +91,12 @@ void loop() {
 
     }
   }
+
+  refreshScore();
+}
+
+void refreshScore() {
+    //Function to refresh the scoreboard
+    display.showNumberDecEx(com_score, 0, false, 2, 2);
+    display.showNumberDecEx(user_score, 0b01000000, false, 2, 0);
 }

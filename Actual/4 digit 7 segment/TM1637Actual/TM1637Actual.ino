@@ -6,8 +6,8 @@
 
 TM1637Display display(CLK, DIO);
 
-int user_score = 1;
-int com_score = 1;
+int user_score = 0;
+int com_score = 0;
 
 void setup()
 {
