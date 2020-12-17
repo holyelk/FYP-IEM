@@ -3,10 +3,16 @@
 #include <Adafruit_PWMServoDriver.h>
 // 7 segment Library
 #include <TM1637Display.h>
+//HuskyLens library
+#include "HUSKYLENS.h"
+#include "SoftwareSerial.h"
 
 //PCA9685 pinout VCC->5V, GND->GND, SDA->SDA, SCL->SCL
-//L/R Button pinout 7 & 8
+//L/R Button pinout 5 & 6
+//Launch button pinout 4
 //7 Segment pinout CLK->2 & DIO->3
+//Score counter pinout human_counter->10 & com_counter->11
+//HUSKYLENS green line >> Pin 51; blue line >> Pin 49
 
 // called this way, it uses the default address 0x40
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
@@ -21,18 +27,27 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 #define CLK 2
 #define DIO 3
 
+//Score counter sensor
+#define human_counter 10
+#define com_counter 11
+
 TM1637Display display(CLK, DIO);
 
+HUSKYLENS huskylens;
+SoftwareSerial mySerial(51, 49); // RX, TX
+void printResult(HUSKYLENSResult result);
+
 // servo number
-uint8_t servonum[] = {0, 1};
+uint8_t servonum[] = {0, 1, 4};
 
 //Pulse length for servo angle
 uint16_t pulselength;
 
-int inPin[] = {7, 8};   // choose the input pin (for a pushbutton) for servonum
+int inPin[] = {5, 6};   // choose the input pin (for a pushbutton) for servonum
 
 int buttonVal[] = {0, 0};     // variable for reading the pin status
 int numOfButtons = 2;
+int launchInput[] = [4]
 
 
 //7 Segment user and com scores
@@ -47,6 +62,10 @@ void setup() {
   pwm.setOscillatorFrequency(27000000);
   pwm.setPWMFreq(SERVO_FREQ);  // Analog servos run at ~50 Hz updates
 
+  //initialize huskylens serial protocol
+  Serial.begin(9600);
+  mySerial.begin(9600);
+
   //Initialize 7 Segment
   uint8_t data[] = { 0xff, 0xff, 0xff, 0xff };
   uint8_t blank[] = { 0x00, 0x00, 0x00, 0x00 };
@@ -58,6 +77,13 @@ void setup() {
   digitalWrite(inPin[0], HIGH);
   pinMode(inPin[1], INPUT);
   digitalWrite(inPin[1], HIGH);
+
+  //initialize score counter pins
+  pinMode(12, INPUT);
+  pinMode(11, INPUT);
+
+  //Set score to be 0:0
+  refreshScore();
 
   delay(10);
 }
@@ -91,12 +117,45 @@ void loop() {
 
     }
   }
+  
+  scoreCounter();
 
-  refreshScore();
+  if (huskylens.available())
+  {
+    HUSKYLENSResult result = huskylens.read();
+    printResult(result);
+  }    
+
+  
 }
 
 void refreshScore() {
     //Function to refresh the scoreboard
     display.showNumberDecEx(com_score, 0, false, 2, 2);
     display.showNumberDecEx(user_score, 0b01000000, false, 2, 0);
+}
+
+void scoreCounter() {
+  if (digitalRead(human_counter) == LOW) {
+    user_score++;
+    refreshScore();
+    delay(1000);
+  }
+  if (digitalRead(com_counter) == LOW) {
+    com_score++;
+    refreshScore();
+    delay(1000);
+  }
+}
+
+void printResult(HUSKYLENSResult result){
+    if (result.command == COMMAND_RETURN_BLOCK){
+        Serial.println(String()+F("Block:xCenter=")+result.xCenter+F(",yCenter=")+result.yCenter+F(",width=")+result.width+F(",height=")+result.height+F(",ID=")+result.ID);
+    }
+    else if (result.command == COMMAND_RETURN_ARROW){
+        Serial.println(String()+F("Arrow:xOrigin=")+result.xOrigin+F(",yOrigin=")+result.yOrigin+F(",xTarget=")+result.xTarget+F(",yTarget=")+result.yTarget+F(",ID=")+result.ID);
+    }
+    else{
+        Serial.println("Object unknown!");
+    }
 }
