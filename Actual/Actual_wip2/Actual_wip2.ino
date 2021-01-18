@@ -23,10 +23,10 @@
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
 #define SERVOMIN  100 // This is the 'minimum' pulse length count (out of 4096)
-#define SERVOMAX  560 // This is the 'maximum' pulse length count (out of 4096)
+#define SERVOMAX  560 // This is th' pulse length count (out of 4096)
 #define USMIN  600 // This is the rounded 'minimum' microsecond length based on the minimum pulse of 150
 #define USMAX  2400 // This is the rounded 'maximum' microsecond length based on the maximum pulse of 600
-#define SERVO_FREQ 50 // Analog servos run at ~50 Hz updates
+#define SERVO_FREQ 50 // Anale 'maximumog servos run at ~50 Hz updates
 
 //7 segment
 #define CLK 2
@@ -43,7 +43,7 @@ SoftwareSerial mySerial(51, 49); // RX, TX
 void printResult(HUSKYLENSResult result);
 
 // servo number
-uint8_t servonum[] = {0, 1, 4};
+uint8_t servonum[] = {0, 1, 4, 2, 3};
 
 //Pulse length for servo angle
 uint16_t pulselength;
@@ -54,11 +54,15 @@ int buttonVal[] = {0, 0};     // variable for reading the pin status
 int numOfButtons = 2;
 
 Button buttonLaunch(4); // Connect your button between pin 4 and GND
+Button buttonReset(22); // Connect your button between pin 22 and GND
 
 
 //7 Segment user and com scores
 int user_score = 0;
 int com_score = 0;
+
+//random number for computer flipper
+int randNumber;
 
 VirtualDelay singleDelay;
 
@@ -71,6 +75,8 @@ void setup() {
   //initialize huskylens serial protocol
   Serial.begin(9600);
   mySerial.begin(9600);
+  while (!huskylens.begin(mySerial))
+  {};
 
   //Initialize 7 Segment
   uint8_t data[] = { 0xff, 0xff, 0xff, 0xff };
@@ -92,6 +98,7 @@ void setup() {
 
   //Initialize debounce
   buttonLaunch.begin();
+  buttonReset.begin();
 
   //Set score to be 0:0
   refreshScore();
@@ -130,19 +137,30 @@ void loop() {
   }
 
   if (buttonLaunch.pressed()) {
-    Serial.println("Button 1 pressed");
+    //Serial.println("Button 1 pressed");
     launchBall();
+  }
+
+  if (buttonReset.pressed()) {
+    //Serial.println("Button 1 pressed");
+    resetScore();
   }
 
   scoreCounter();
 
-  if (huskylens.available())
+  if (!huskylens.request()) Serial.println(F("Fail to request data from HUSKYLENS, recheck the connection!"));
+
+  else
   {
-    HUSKYLENSResult result = huskylens.read();
-    printResult(result);
+    while (huskylens.available())
+    {
+      HUSKYLENSResult result = huskylens.read();
+      printResult(result);
+    }
   }
 
-  if(singleDelay.elapsed()) {
+
+  if (singleDelay.elapsed()) {
     pulselength = map(142, 0, 180, SERVOMIN, SERVOMAX);
     pwm.setPWM(servonum[2], 0, pulselength);
   }
@@ -172,31 +190,98 @@ void refreshScore() {
 }
 
 void scoreCounter() {
-  if (digitalRead(human_counter) == LOW) {
+  if (digitalRead(com_counter) == LOW) {
     user_score++;
     refreshScore();
     delay(1000);
   }
-  if (digitalRead(com_counter) == LOW) {
+  if (digitalRead(human_counter) == LOW) {
     com_score++;
     refreshScore();
     delay(1000);
   }
 
-  //Reset launcher
-  //pulselength = map(148, 0, 180, SERVOMIN, SERVOMAX);
-  //pwm.setPWM(servonum[2], 0, pulselength);
-  //Serial.println("reset");
+}
+
+void resetScore() {
+  user_score = 0;
+  com_score = 0;
+  refreshScore();
+  delay(500);
 }
 
 void printResult(HUSKYLENSResult result) {
+  int posX, posY;
   if (result.command == COMMAND_RETURN_BLOCK) {
+
     Serial.println(String() + F("Block:xCenter=") + result.xCenter + F(",yCenter=") + result.yCenter + F(",width=") + result.width + F(",height=") + result.height + F(",ID=") + result.ID);
+    //delay(500);
+    posX = result.xCenter;
+    posY = result.yCenter;
+    Serial.println(posX);
+    Serial.println(posY);
+
+    if ((posX <= 200) && (posX >= 44) && (posY >= 100) && (posY <= 176)) {
+      comRFlipper();
+    }
+
+    if ((posX <= 200) && (posX >= 44) && (posY >= 14) && (posY <= 71)) {
+      comLFlipper();
+    }
+
+
+    /*
+        //RIGHT FLIPPER
+        while (((result.xCenter <= 81) && (result.xCenter >= 44)) && ((result.yCenter >= 100) && (result.yCenter <= 176))) {
+          pulselength = map(90, 0, 180, SERVOMIN, SERVOMAX);
+          pwm.setPWM(servonum[3], 0, pulselength);
+          delay(10);
+          pulselength = map(30, 0, 180, SERVOMIN, SERVOMAX);
+          pwm.setPWM(servonum[3], 0, pulselength);
+          delay(10);
+
+        }
+        //LEFT FLIPPER
+        while (((result.xCenter <= 84) && (result.xCenter >= 44)) && ((result.yCenter >= 14) && (result.yCenter <= 71))) {
+          pulselength = map(80, 0, 180, SERVOMIN, SERVOMAX);
+          pwm.setPWM(servonum[4], 0, pulselength);
+          delay(10);
+          pulselength = map(140, 0, 180, SERVOMIN, SERVOMAX);
+          pwm.setPWM(servonum[4], 0, pulselength);
+          delay(10);
+        }*/
+
+    pulselength = map(90, 0, 180, SERVOMIN, SERVOMAX);
+    pwm.setPWM(servonum[3], 0, pulselength);
+    pulselength = map(80, 0, 180, SERVOMIN, SERVOMAX);
+    pwm.setPWM(servonum[4], 0, pulselength);
   }
-  else if (result.command == COMMAND_RETURN_ARROW) {
-    Serial.println(String() + F("Arrow:xOrigin=") + result.xOrigin + F(",yOrigin=") + result.yOrigin + F(",xTarget=") + result.xTarget + F(",yTarget=") + result.yTarget + F(",ID=") + result.ID);
-  }
+
   else {
     Serial.println("Object unknown!");
   }
+}
+
+void comRFlipper() {
+  randNumber = random(0, 50);
+  delay(randNumber);
+  pulselength = map(90, 0, 180, SERVOMIN, SERVOMAX);
+  pwm.setPWM(servonum[3], 0, pulselength);
+  randNumber = random(150, 350);
+  delay(randNumber);
+  pulselength = map(30, 0, 180, SERVOMIN, SERVOMAX);
+  pwm.setPWM(servonum[3], 0, pulselength);
+  delay(200);
+}
+
+void comLFlipper() {
+  randNumber = random(0, 50);
+  delay(randNumber);
+  pulselength = map(80, 0, 180, SERVOMIN, SERVOMAX);
+  pwm.setPWM(servonum[4], 0, pulselength);
+  randNumber = random(150, 350);
+  delay(randNumber);
+  pulselength = map(140, 0, 180, SERVOMIN, SERVOMAX);
+  pwm.setPWM(servonum[4], 0, pulselength);
+  delay(200);
 }
