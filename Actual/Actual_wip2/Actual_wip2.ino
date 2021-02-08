@@ -8,6 +8,7 @@
 #include "SoftwareSerial.h"
 //Debounce library
 #include <Button.h>
+
 //non blocking Delay library
 #include <avdweb_VirtualDelay.h>
 
@@ -35,6 +36,10 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 //Score counter sensor
 #define human_counter 10
 #define com_counter 11
+
+//fiber
+#define fiber1 24
+bool b;
 
 TM1637Display display(CLK, DIO);
 
@@ -64,7 +69,7 @@ int com_score = 0;
 //random number for computer flipper
 int randNumber;
 
-VirtualDelay singleDelay;
+VirtualDelay singleDelay, fiberDelay;
 
 void setup() {
 
@@ -96,6 +101,9 @@ void setup() {
   pinMode(12, INPUT);
   pinMode(11, INPUT);
 
+  //initialize fiber
+  pinMode(fiber1, OUTPUT);
+
   //Initialize debounce
   buttonLaunch.begin();
   buttonReset.begin();
@@ -107,6 +115,12 @@ void setup() {
 }
 
 void loop() {
+
+  //non blocking delay LED
+  fiberDelay.start(400); // calls while running are ignored
+  if (fiberDelay.elapsed()) {
+    digitalWrite(fiber1, b = !b);
+  }
 
   //loop through all buttons to see if pressed
   for (int thisButton = 0; thisButton < numOfButtons; thisButton++) {
@@ -164,6 +178,8 @@ void loop() {
     pulselength = map(142, 0, 180, SERVOMIN, SERVOMAX);
     pwm.setPWM(servonum[2], 0, pulselength);
   }
+
+
 
 
 }
@@ -229,27 +245,6 @@ void printResult(HUSKYLENSResult result) {
       comLFlipper();
     }
 
-
-    /*
-        //RIGHT FLIPPER
-        while (((result.xCenter <= 81) && (result.xCenter >= 44)) && ((result.yCenter >= 100) && (result.yCenter <= 176))) {
-          pulselength = map(90, 0, 180, SERVOMIN, SERVOMAX);
-          pwm.setPWM(servonum[3], 0, pulselength);
-          delay(10);
-          pulselength = map(30, 0, 180, SERVOMIN, SERVOMAX);
-          pwm.setPWM(servonum[3], 0, pulselength);
-          delay(10);
-
-        }
-        //LEFT FLIPPER
-        while (((result.xCenter <= 84) && (result.xCenter >= 44)) && ((result.yCenter >= 14) && (result.yCenter <= 71))) {
-          pulselength = map(80, 0, 180, SERVOMIN, SERVOMAX);
-          pwm.setPWM(servonum[4], 0, pulselength);
-          delay(10);
-          pulselength = map(140, 0, 180, SERVOMIN, SERVOMAX);
-          pwm.setPWM(servonum[4], 0, pulselength);
-          delay(10);
-        }*/
 
     pulselength = map(90, 0, 180, SERVOMIN, SERVOMAX);
     pwm.setPWM(servonum[3], 0, pulselength);

@@ -1,0 +1,1 @@
+I wanted to use raspi. So I wrote the code for YOLO(AI algo) in python and got the weights. However, to cut costs I decided to go with arduino and bought a AI camera that uses the same YOLO as arduino not enough power for python. But it cannot use my custom weights as the AI camera is proprietary.
