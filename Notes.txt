@@ -1,7 +1,0 @@
-external
-5v - to junction
-gnd - to arduino gnd
-
-arduino
-5v
-gnd

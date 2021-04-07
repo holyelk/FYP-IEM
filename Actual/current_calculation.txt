@@ -1,3 +1,0 @@
-4 digit 7 segment - 200mA @5V
-microservo - stall current 650+-80=730mA
-DC motor - 500mA stall current
