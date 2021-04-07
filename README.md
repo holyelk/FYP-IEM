@@ -3,20 +3,13 @@ Repository for Bryan's IEM FYP
 
 ***
 ### Top level folders will represent what is in them
-- Ideation
-- Logbook
-- Planning
-- ESP32
+- Actual
+- Research
 
 ***
-### Ideation
-Ideation documentation
+### Actual
+Consists of the final code, circuit diagram and the archive of work in progress for this project
 
-### Logbook
-Logbook
+### Research
+Consists of ideation, planning and other documents before the implementation
 
-### Planning
-Time schedule and project objectives
-
-### ESP32
-Sample code for Webhooks with ESP32
