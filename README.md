@@ -1,6 +1,8 @@
 # FYP-IEM
 Repository for Bryan's IEM FYP
 
+![alt text](https://github.com/holyelk/FYP-IEM/blob/master/Actual/finalIMG.jpg)
+
 ***
 ### Top level folders will represent what is in them
 - Actual
